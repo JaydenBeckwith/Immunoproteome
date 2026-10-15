@@ -1,0 +1,95 @@
+sample,patient,cohort,arm,timepoint,path_resp,site,seq_type,reran,is_rerun,response,n
+S2339Nr1,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr10,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr11,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr12,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr13,NA,PRADO,IPI+NIVO,Baseline,pNR (> 50% vital tumor cells),NKI/EGA,Paired-end,No,FALSE,Non-responder,94
+S2339Nr139,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr14,NA,PRADO,IPI+NIVO,Baseline,distant metastasis,NKI/EGA,Paired-end,No,FALSE,NA,94
+S2339Nr140,NA,PRADO,IPI+NIVO,Baseline,pNR (> 50% vital tumor cells),NKI/EGA,Paired-end,No,FALSE,Non-responder,94
+S2339Nr141,NA,PRADO,IPI+NIVO,Baseline,near pCR (=10% viable tumour),NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr142,NA,PRADO,IPI+NIVO,Baseline,pNR (> 50% vital tumor cells),NKI/EGA,Paired-end,No,FALSE,Non-responder,94
+S2339Nr143,NA,PRADO,IPI+NIVO,Baseline,pPR (>10 to =50% viable tumour),NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr144,NA,PRADO,IPI+NIVO,Baseline,pNR (> 50% vital tumor cells),NKI/EGA,Paired-end,No,FALSE,Non-responder,94
+S2339Nr15,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr16,NA,PRADO,IPI+NIVO,Baseline,distant metastasis,NKI/EGA,Paired-end,No,FALSE,NA,94
+S2339Nr17,NA,PRADO,IPI+NIVO,Baseline,pNR (> 50% vital tumor cells),NKI/EGA,Paired-end,No,FALSE,Non-responder,94
+S2339Nr18,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr19,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr2,NA,PRADO,IPI+NIVO,Baseline,near pCR (=10% viable tumour),NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr20,NA,PRADO,IPI+NIVO,Baseline,pNR (> 50% vital tumor cells),NKI/EGA,Paired-end,No,FALSE,Non-responder,94
+S2339Nr21,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr22,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr23,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr24,NA,PRADO,IPI+NIVO,Baseline,pNR (> 50% vital tumor cells),NKI/EGA,Paired-end,No,FALSE,Non-responder,94
+S2339Nr25,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr26,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr27,NA,PRADO,IPI+NIVO,Baseline,pPR (>10 to =50% viable tumour),NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr28,NA,PRADO,IPI+NIVO,Baseline,pPR (>10 to =50% viable tumour),NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr29,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr3,NA,PRADO,IPI+NIVO,Baseline,pNR (> 50% vital tumor cells),NKI/EGA,Paired-end,No,FALSE,Non-responder,94
+S2339Nr30,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr31,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr32,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr33,NA,PRADO,IPI+NIVO,Baseline,pPR (>10 to =50% viable tumour),NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr34,NA,PRADO,IPI+NIVO,Baseline,pPR (>10 to =50% viable tumour),NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr35,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr36,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr37,NA,PRADO,IPI+NIVO,Baseline,pPR (>10 to =50% viable tumour),NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr38,NA,PRADO,IPI+NIVO,Baseline,pNR (> 50% vital tumor cells),NKI/EGA,Paired-end,No,FALSE,Non-responder,94
+S2339Nr39,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr4,NA,PRADO,IPI+NIVO,Baseline,distant metastasis,NKI/EGA,Paired-end,No,FALSE,NA,94
+S2339Nr40,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr41,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr42,NA,PRADO,IPI+NIVO,Baseline,pPR (>10 to =50% viable tumour),NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr43,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr6,NA,PRADO,IPI+NIVO,Baseline,near pCR (=10% viable tumour),NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr7,NA,PRADO,IPI+NIVO,Baseline,pPR (>10 to =50% viable tumour),NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr8,NA,PRADO,IPI+NIVO,Baseline,near pCR (=10% viable tumour),NKI/EGA,Paired-end,No,FALSE,Responder,94
+S2339Nr9,NA,PRADO,IPI+NIVO,Baseline,distant metastasis,NKI/EGA,Paired-end,No,FALSE,NA,94
+CF27140,NA,OpACIN,Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Baseline,pNR,NKI/EGA,Single-end,NA,FALSE,Non-responder,94
+CF27438,NA,OpACIN,Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Baseline,pCR,NKI/EGA,Single-end,NA,FALSE,Responder,94
+CF27439,NA,OpACIN,Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent),Baseline,pCR,NKI/EGA,Single-end,NA,FALSE,Responder,94
+CF27440,NA,OpACIN,Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent),Baseline,near pCR,NKI/EGA,Single-end,NA,FALSE,Responder,94
+CF27441,NA,OpACIN,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Baseline,pNR,NKI/EGA,Single-end,NA,FALSE,Non-responder,94
+CF27442,NA,OpACIN,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Baseline,pNR,NKI/EGA,Single-end,NA,FALSE,Non-responder,94
+CF27443,NA,OpACIN,Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Baseline,pNR,NKI/EGA,Single-end,NA,FALSE,Non-responder,94
+CF27444,NA,OpACIN,Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Baseline,near pCR,NKI/EGA,Single-end,NA,FALSE,Responder,94
+CF27445,NA,OpACIN,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Baseline,pCR,NKI/EGA,Single-end,NA,FALSE,Responder,94
+CF27447,NA,OpACIN,Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent),Baseline,pNR,NKI/EGA,Single-end,NA,FALSE,Non-responder,94
+CF27448,NA,OpACIN,Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Baseline,pNR,NKI/EGA,Single-end,NA,FALSE,Non-responder,94
+CF27449,NA,OpACIN,Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent),Baseline,pPR,NKI/EGA,Single-end,NA,FALSE,Responder,94
+CF27450,NA,OpACIN,Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Baseline,near pCR,NKI/EGA,Single-end,NA,FALSE,Responder,94
+CF27451,NA,OpACIN,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Baseline,pCR,NKI/EGA,Single-end,NA,FALSE,Responder,94
+CF27452,NA,OpACIN,Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Baseline,unknown,NKI/EGA,Single-end,NA,FALSE,NA,94
+CF27453,NA,OpACIN,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Baseline,pCR,NKI/EGA,Single-end,NA,FALSE,Responder,94
+CF27454,NA,OpACIN,Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Baseline,pCR,NKI/EGA,Single-end,NA,FALSE,Responder,94
+CF27455,NA,OpACIN,Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Baseline,pNR,NKI/EGA,Single-end,NA,FALSE,Non-responder,94
+CF27456,NA,OpACIN,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Baseline,pPR,NKI/EGA,Single-end,NA,FALSE,Responder,94
+CF27457,NA,OpACIN,Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Baseline,pPR,NKI/EGA,Single-end,NA,FALSE,Responder,94
+CF27458,NA,OpACIN,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Baseline,pNR,NKI/EGA,Single-end,NA,FALSE,Non-responder,94
+CF27459,NA,OpACIN,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Baseline,pCR,NKI/EGA,Single-end,NA,FALSE,Responder,94
+CF27460,NA,OpACIN,Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent),Baseline,pPR,NKI/EGA,Single-end,NA,FALSE,Responder,94
+CF27461,NA,OpACIN,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Baseline,pCR,NKI/EGA,Single-end,NA,FALSE,Responder,94
+CF27806,NA,OpACIN,Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent),Baseline,pNR,NKI/EGA,Single-end,NA,FALSE,Non-responder,94
+CF27807,NA,OpACIN,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Baseline,pPR,NKI/EGA,Single-end,NA,FALSE,Responder,94
+CF27808,NA,OpACIN,Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent),Baseline,NA,NKI/EGA,Single-end,NA,FALSE,NA,94
+CF27809,NA,OpACIN,Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Baseline,NA,NKI/EGA,Single-end,NA,FALSE,NA,94
+CF27810,NA,OpACIN,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Baseline,near pCR,NKI/EGA,Single-end,NA,FALSE,Responder,94
+CF27811,NA,OpACIN,Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Baseline,distant metastasis,NKI/EGA,Single-end,NA,FALSE,NA,94
+CF27812,NA,OpACIN,Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent),Baseline,pCR,NKI/EGA,Single-end,NA,FALSE,Responder,94
+CF27813,NA,OpACIN,Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Baseline,near pCR,NKI/EGA,Single-end,NA,FALSE,Responder,94
+CF27814,NA,OpACIN,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Baseline,pCR,NKI/EGA,Single-end,NA,FALSE,Responder,94
+CF27815,NA,OpACIN,Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Baseline,pNR,NKI/EGA,Single-end,NA,FALSE,Non-responder,94
+CF27816,NA,OpACIN,Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent),Baseline,pNR,NKI/EGA,Single-end,NA,FALSE,Non-responder,94
+CF27817,NA,OpACIN,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Baseline,NA,NKI/EGA,Single-end,NA,FALSE,NA,94
+CF27818,NA,OpACIN,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Baseline,pNR,NKI/EGA,Single-end,NA,FALSE,Non-responder,94
+CF27825,NA,OpACIN,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Baseline,distant metastasis,NKI/EGA,Single-end,NA,FALSE,NA,94
+CF27963,NA,OpACIN,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Baseline,NA,NKI/EGA,Single-end,NA,FALSE,NA,94
+CF27969,NA,OpACIN,Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent),Baseline,pCR,NKI/EGA,Single-end,NA,FALSE,Responder,94
+CF27970,NA,OpACIN,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Baseline,pCR,NKI/EGA,Single-end,NA,FALSE,Responder,94
+S2339Nr120,NA,PRADO,IPI+NIVO,Baseline,pPR (>10 to =50% viable tumour),NKI/EGA,Paired-end,NA,FALSE,Responder,94
+S2339Nr121,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,NA,FALSE,Responder,94
+S2339Nr122,NA,PRADO,IPI+NIVO,Baseline,NA,NKI/EGA,Paired-end,NA,FALSE,NA,94
+S2339Nr123,NA,PRADO,IPI+NIVO,Baseline,NA,NKI/EGA,Paired-end,NA,FALSE,NA,94
+S2339Nr5,NA,PRADO,IPI+NIVO,Baseline,pCR,NKI/EGA,Paired-end,NA,FALSE,Responder,94

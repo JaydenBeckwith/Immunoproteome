@@ -1,0 +1,5 @@
+timepoint,analysis,note
+Baseline,adjusted,Rank-deficient model: arm + cohort + response + site + seq_type - site/type effects not separable; see batch_cross_tabulations.csv.
+Week 6,site,Unadjusted test skipped: need >=2 groups with >=2 samples each.
+Week 6,seq_type,Unadjusted test skipped: need >=2 groups with >=2 samples each.
+Week 6,adjusted,Neither batch variable varies.

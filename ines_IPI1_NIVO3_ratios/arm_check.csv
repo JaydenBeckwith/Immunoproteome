@@ -1,0 +1,6 @@
+arm_raw,ipi1_nivo3,n
+Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent),FALSE,33
+Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),TRUE,35
+Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),FALSE,31
+Comparator Arm - Ipi + Nivo (Cohort 1),TRUE,12
+IPI+NIVO,TRUE,131

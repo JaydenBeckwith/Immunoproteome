@@ -1,0 +1,5 @@
+ratio,adjustment,n,n_patients,covariates_used,covariates_aliased,model,estimate_W6_minus_BL,p,FDR
+IP_ratio,unadjusted,73,51,,,lmer (1|patient),0.7105600374740838,9.368626216058e-6,1.870585410228555e-5
+IP_ratio,adjusted_trial,73,51,trial,,lmer (1|patient),0.72372904846565,1.4003403990510458e-5,1.4003403990510458e-5
+PADI_ratio,unadjusted,73,51,,,lmer (1|patient),1.3029232961240962,1.870585410228555e-5,1.870585410228555e-5
+PADI_ratio,adjusted_trial,73,51,trial,,lmer (1|patient),1.3726986364959273,1.2215623692710637e-5,1.4003403990510458e-5

@@ -1,0 +1,733 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(data.table)
+library(dplyr)
+```
+
+```{r}
+### load tpm object in 
+expr_matrix <- read.csv("tpm_prado_merge_hgnc_all.csv") %>% as.data.frame()
+colnames(expr_matrix)[1] <- "gene_name"
+head(expr_matrix)
+
+
+rownames(expr_matrix) <- expr_matrix$gene_name
+head(expr_matrix)
+```
+```{r}
+
+```
+
+```{r}
+rna_master_sheet <- readxl::read_excel("C:/Users/jayde/Documents/Repos/Immunoproteome/neoadjuvant_singscore_master_sheet_UPDATED.xlsx")
+unique(rna_master_sheet$`Treatment arms`)
+```
+```{r}
+ipi_nivo_runner <- rna_master_sheet[rna_master_sheet$`Treatment arms` %in% c("IPI+NIVO", "Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent)", "Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential)",  "Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent)", "Comparator Arm - Ipi + Nivo (Cohort 1)"), ] 
+
+colnames(ipi_nivo_runner)
+
+ipi_nivo_runner[ipi_nivo_runner$Cohort == "Morpheus",]
+```
+```{r}
+ipi_expr_matrix <- expr_matrix[, colnames(expr_matrix) %in% ipi_nivo_runner$`RNA sample`]  
+head(ipi_expr_matrix)
+```
+
+
+```{r}
+# =============================================================================
+# IPI 1 mg/kg + NIVO 3 mg/kg: Baseline vs Week 6 for Ines's ratios
+#   IP_ratio   = log2[ geometric mean(PSMB8,9,10 TPM+1) / geometric mean(PSMB5,6,7 TPM+1) ]
+#                = mean log2(TPM+1) of IP genes minus mean log2(TPM+1) of CP genes
+#                  (0 = balanced, +1 = IP ~2x CP, -1 = IP ~half CP)
+#   PADI_ratio = log2[ (PADI2 TPM+1) / (PADI4 TPM+1) ]
+# Inputs already in session:
+#   ipi_expr_matrix  gene-symbol rows x sample columns, raw TPM
+#   ipi_nivo_runner  sample metadata
+# Outputs (PNG + CSV) in `out_dir`:
+#   1_ / 2_   Baseline vs Week 6, all samples and by response
+#   3_        IP/CP and PADI2/PADI4 ratios vs IFNG (Spearman): Baseline, Week 6, change
+#   4_        responders vs non-responders: IP/CP, PADI2/PADI4, IFNG (BL, W6, change)
+#   5_        antigen presentation genes: R vs NR at each visit, and BL vs W6 within R / NR
+#   6_        depth reruns vs their original sample
+#   stats_model_*.csv  mixed model (patient random intercept), +/- trial
+# Only AGRF / Paired-end samples are used (see site_keep / type_keep): the
+# NKI/EGA batches exist only at Baseline and can't be separated from timepoint.
+# =============================================================================
+
+suppressPackageStartupMessages(library(tidyverse))
+has_lme4 <- requireNamespace("lme4", quietly = TRUE)
+if (!has_lme4) message("lme4 not installed: models use lm() without a patient random effect. ",
+                       "install.packages('lme4') to account for repeated patients.")
+
+
+# ---- 1. Settings -------------------------------------------------------------
+
+out_dir      <- "ines_IPI1_NIVO3_ratios"
+baseline_lab <- "Baseline"
+wk6_lab      <- "Week 6"
+# Treatment labels in the metadata: "Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent)"
+# is OpACIN-neo; the plain "IPI+NIVO" label is PRADO (same IPI 1 + NIVO 3 regimen).
+# Set to FALSE to analyse OpACIN-neo Arm B only.
+include_plain_ipi_nivo <- TRUE
+# "Comparator Arm - Ipi + Nivo (Cohort 1)" uses the same IPI 1 + NIVO 3 regimen.
+include_comparator     <- TRUE
+# Trial / cohort label shown on plots for each raw "Treatment arms" value.
+trial_labels <- c(`Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent)` = "OpACIN-neo",
+                  `IPI+NIVO`                                     = "PRADO",
+                  `Comparator Arm - Ipi + Nivo (Cohort 1)`       = "Morpheus")
+# Restrict to one sequencing batch present at both timepoints. NKI/EGA samples
+# exist only at Baseline and differ strongly from AGRF, so they are excluded.
+# Set either to NULL to drop that filter.
+site_keep <- "AGRF"
+type_keep <- "Paired-end"
+# Manual response corrections (patient = "Responder" / "Non-responder") for
+# missing or wrong metadata. Applied before response is propagated per patient.
+response_override <- c(`47088` = "Responder")   # pCR; Pathologic response blank in metadata
+# Clinical PD (progressed before surgery) is shown as its own group in the
+# figures. TRUE = counted with non-responders in R vs NR stats (intention to treat).
+pd_as_nonresponder <- TRUE
+
+ip_genes   <- c("PSMB8", "PSMB9", "PSMB10")   # immunoproteasome
+cp_genes   <- c("PSMB5", "PSMB6", "PSMB7")    # constitutive proteasome
+padi_genes <- c("PADI2", "PADI4")
+apm_genes  <- c("B2M", "HLA-A", "HLA-B", "HLA-C", "TAP1", "TAP2", "NLRC5")   # antigen presentation
+
+ratio_labels <- c(IP_ratio   = "IP/CP ratio\nlog2 geometric mean (TPM+1)",
+                  PADI_ratio = "PADI2 / PADI4\nlog2(TPM+1) ratio")
+resp_cols <- c(Responder = "#1B7837", `Non-responder` = "#762A83", `Clinical PD` = "#E08214",
+               `Declined surgery` = "grey60", Unknown = "grey80")
+
+dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+
+
+# ---- 2. Helpers --------------------------------------------------------------
+
+clean_id   <- function(x) sub("^X(?=[0-9])", "", trimws(as.character(x)), perl = TRUE)
+clean_text <- function(x) na_if(str_squish(as.character(x)), "")
+write_out  <- function(x, name) write_csv(x, file.path(out_dir, paste0(name, ".csv")))
+save_png   <- function(p, name, w, h)
+  ggsave(file.path(out_dir, paste0(name, ".png")), p, width = w, height = h,
+         units = "in", dpi = 300, bg = "white")
+fmt_p <- function(p) ifelse(is.na(p), "n.e.", format.pval(p, digits = 2, eps = 0.001))
+# Stats text in red when significant (FDR < sig_fdr), otherwise black.
+sig_fdr <- 0.05
+sig_col <- function(st) ifelse(!is.na(st$FDR) & st$FDR < sig_fdr, "#D7191C", "black")
+slug  <- function(x) gsub("^_|_$", "", gsub("[^A-Za-z0-9]+", "_", tolower(x)))
+
+# All plot text black (theme_bw greys axis and strip text by default).
+black_text <- theme(text       = element_text(colour = "black"),
+                    axis.text  = element_text(colour = "black"),
+                    strip.text = element_text(colour = "black"))
+
+# Column lookup ignoring case/punctuation ("RNA.seq. site" == "RNA seq site").
+find_col <- function(d, name) {
+  norm <- function(x) gsub("[^a-z0-9]", "", tolower(x))
+  hit <- names(d)[norm(names(d)) == norm(name)]
+  if (length(hit) != 1) stop("Cannot uniquely find column '", name, "'")
+  hit
+}
+
+# TRUE for IPI 1 mg/kg + NIVO 3 mg/kg: matches "IPI 1mg/kg ... Nivo 3mg/kg"
+# (also "Ipilimumab Dose: 1 mg/kg"), plus plain "IPI+NIVO" if enabled above.
+is_ipi1_nivo3 <- function(x) {
+  dose_match <- str_detect(x, regex("ipi\\w*\\W*(dose\\W*)?1\\s*mg/kg", ignore_case = TRUE)) &
+                str_detect(x, regex("nivo\\w*\\W*(dose\\W*)?3\\s*mg/kg", ignore_case = TRUE))
+  plain <- include_plain_ipi_nivo & str_detect(x, regex("^ipi\\s*\\+\\s*nivo$", ignore_case = TRUE))
+  comparator <- include_comparator &
+    str_detect(x, regex("^comparator arm\\W*ipi\\s*\\+\\s*nivo\\W*\\(cohort\\s*1\\)", ignore_case = TRUE))
+  dose_match | plain | comparator
+}
+
+# Add terms one at a time, skipping any with <2 levels or that are aliased with
+# terms already in (e.g. a site that only ever occurs at one timepoint).
+build_terms <- function(d, candidates) {
+  kept <- character(); dropped <- character()
+  for (v in candidates) {
+    if (n_distinct(d[[v]]) < 2) next
+    mm <- model.matrix(reformulate(c(kept, v)), d)
+    if (qr(mm)$rank == ncol(mm)) kept <- c(kept, v) else dropped <- c(dropped, v)
+  }
+  list(kept = kept, dropped = dropped)
+}
+
+# Week 6 vs Baseline effect on a ratio, optionally adjusted for covariates.
+# Mixed model with a patient random intercept when lme4 is available and some
+# patients contribute two samples; likelihood-ratio test for timepoint.
+fit_timepoint <- function(d, covars) {
+  d  <- drop_na(d, all_of(covars))
+  tm <- build_terms(d, c("timepoint", covars))
+  out <- tibble(n = nrow(d), n_patients = n_distinct(d$patient),
+                covariates_used = paste(setdiff(tm$kept, "timepoint"), collapse = " + "),
+                covariates_aliased = paste(tm$dropped, collapse = " + "))
+  if (!"timepoint" %in% tm$kept || nrow(d) - length(tm$kept) < 3)
+    return(mutate(out, model = NA_character_, estimate_W6_minus_BL = NA_real_, p = NA_real_))
+
+  use_re <- has_lme4 && anyDuplicated(d$patient) > 0
+  rhs_full <- tm$kept
+  rhs_null <- setdiff(tm$kept, "timepoint"); if (!length(rhs_null)) rhs_null <- "1"
+  if (use_re) { rhs_full <- c(rhs_full, "(1 | patient)"); rhs_null <- c(rhs_null, "(1 | patient)") }
+  f_full <- reformulate(rhs_full, "value"); f_null <- reformulate(rhs_null, "value")
+
+  res <- tryCatch(suppressMessages(suppressWarnings({
+    if (use_re) {
+      full <- lme4::lmer(f_full, d, REML = FALSE); null <- lme4::lmer(f_null, d, REML = FALSE)
+      list(est = lme4::fixef(full), p = anova(null, full)$`Pr(>Chisq)`[2])
+    } else {
+      full <- lm(f_full, d); null <- lm(f_null, d)
+      list(est = coef(full), p = anova(null, full)$`Pr(>F)`[2])
+    }
+  })), error = function(e) NULL)
+  if (is.null(res))
+    return(mutate(out, model = "failed", estimate_W6_minus_BL = NA_real_, p = NA_real_))
+  mutate(out, model = if (use_re) "lmer (1|patient)" else "lm",
+         estimate_W6_minus_BL = unname(res$est[grep("^timepoint", names(res$est))][1]),
+         p = res$p)
+}
+
+
+
+# ---- 3. Metadata: IPI 1 + NIVO 3, Baseline / Week 6 only ---------------------
+
+expr <- as.matrix(ipi_expr_matrix)
+colnames(expr) <- clean_id(colnames(expr))
+meta <- as_tibble(ipi_nivo_runner)
+rerun_col <- find_col(meta, "Reran for depth")
+
+md <- meta %>%
+  transmute(
+    sample    = clean_id(`RNA sample`),
+    patient   = clean_text(`Mel Pin`),
+    arm_raw   = clean_text(`Treatment arms`),
+    timepoint = clean_text(Timepoint),
+    path_resp = clean_text(`Pathologic response`),
+    seq_type  = clean_text(.data[[find_col(meta, "Seq. type")]]),
+    seq_site  = clean_text(.data[[find_col(meta, "Seq. site")]]),
+    reran     = clean_text(.data[[rerun_col]]),
+    is_rerun  = !is.na(reran) &
+                !str_detect(reran, regex("^(no?|false|0|none|na)$", ignore_case = TRUE)),
+    response  = case_when(
+      str_detect(path_resp, regex("^(pcr|near|npcr|ppr)", ignore_case = TRUE)) ~ "Responder",
+      # Clinical PD = progressed before surgery (own group; see pd_as_nonresponder).
+      # "other" = declined surgery: no pathologic outcome, so it is shown in the
+      # all-sample figure but excluded from responder vs non-responder comparisons.
+      str_detect(path_resp, regex("^other", ignore_case = TRUE)) ~ "Declined surgery",
+      str_detect(path_resp, regex("^clinical\\s*pd", ignore_case = TRUE)) ~ "Clinical PD",
+      str_detect(path_resp, regex("^pnr", ignore_case = TRUE))              ~ "Non-responder"),
+    ipi1_nivo3 = coalesce(is_ipi1_nivo3(arm_raw), FALSE))
+
+# Check this file to confirm the right arm was picked up.
+write_out(count(md, arm_raw, ipi1_nivo3), "arm_check")
+if (!any(md$ipi1_nivo3)) stop("No samples matched IPI 1 mg/kg + NIVO 3 mg/kg; see arm_check.csv")
+
+md <- md %>%
+  mutate(trial = coalesce(unname(trial_labels[arm_raw]), arm_raw)) %>%
+  filter(ipi1_nivo3, timepoint %in% c(baseline_lab, wk6_lab), sample %in% colnames(expr)) %>%
+  mutate(in_batch = (is.null(site_keep) | seq_site %in% site_keep) &
+                    (is.null(type_keep) | seq_type %in% type_keep))
+
+# Record what the batch filter removes, then apply it.
+write_out(count(md, trial, timepoint, seq_site, seq_type, in_batch), "batch_filter")
+md <- md %>% filter(in_batch) %>% select(-in_batch)
+if (!nrow(md)) stop("No samples left after the Seq. site / Seq. type filter; see batch_filter.csv")
+
+# Ratios for every candidate sample (including originals later replaced by
+# reruns, so the two can be compared).
+genes   <- c(ip_genes, cp_genes, padi_genes, "IFNG", apm_genes)
+missing <- setdiff(genes, rownames(expr))
+if (length(missing)) stop("Missing genes: ", paste(missing, collapse = ", "))
+lx <- log2(expr[genes, md$sample, drop = FALSE] + 1)
+ratios_all <- tibble(
+  sample     = md$sample,
+  IP_ratio   = colMeans(lx[ip_genes, , drop = FALSE]) - colMeans(lx[cp_genes, , drop = FALSE]),
+  PADI_ratio = lx["PADI2", ] - lx["PADI4", ],
+  IFNG       = lx["IFNG", ],                    # log2(TPM+1)
+  APM_score  = colMeans(lx[apm_genes, , drop = FALSE]))   # mean log2(TPM+1) of APM genes
+for (g in apm_genes) ratios_all[[g]] <- lx[g, ]          # each APM gene, log2(TPM+1)
+candidates <- md
+
+# Replicates: for a duplicated patient x timepoint keep the single depth rerun;
+# if that's ambiguous, drop the timepoint rather than pick arbitrarily.
+md <- md %>%
+  group_by(patient, timepoint) %>%
+  mutate(n_rep = n(), keep = n_rep == 1 | (is_rerun & sum(is_rerun) == 1)) %>%
+  ungroup()
+write_out(filter(md, n_rep > 1) %>% select(patient, timepoint, sample, reran, seq_site, seq_type, keep), "replicates")
+unresolved <- md %>% group_by(patient, timepoint) %>% filter(!any(keep)) %>% ungroup()
+if (nrow(unresolved))
+  warning(nrow(distinct(unresolved, patient, timepoint)),
+          " patient x timepoint(s) dropped: unresolved replicates (see replicates.csv)")
+md <- md %>% filter(keep) %>% select(-n_rep, -keep)
+
+# Manual corrections first, then check consistency.
+md <- md %>%
+  mutate(response = coalesce(unname(response_override[patient]), response))
+
+# Response is patient-level.
+resp_conflict <- md %>% group_by(patient) %>% filter(n_distinct(response, na.rm = TRUE) > 1)
+if (nrow(resp_conflict)) stop("Conflicting response labels for: ",
+                              paste(unique(resp_conflict$patient), collapse = ", "))
+md <- md %>%
+  group_by(patient) %>%
+  mutate(response = coalesce(first(na.omit(response), default = NA), "Unknown")) %>%
+  ungroup() %>%
+  mutate(response = factor(response, levels = names(resp_cols)),
+         # Grouping used for R vs NR stats; NA = excluded.
+         response_group = case_when(
+           response == "Responder"                         ~ "Responder",
+           response == "Non-responder"                     ~ "Non-responder",
+           response == "Clinical PD" & pd_as_nonresponder  ~ "Non-responder"),
+         response_group = factor(response_group, levels = c("Responder", "Non-responder")))
+
+
+# ---- 4. Ratios ---------------------------------------------------------------
+
+df <- md %>%
+  left_join(ratios_all, by = "sample") %>%
+  mutate(timepoint = factor(timepoint, levels = c(baseline_lab, wk6_lab)))
+write_out(df, "per_sample_ratios")
+
+# All available samples, long format (one row per sample x ratio).
+long <- df %>%
+  pivot_longer(c(IP_ratio, PADI_ratio), names_to = "ratio", values_to = "value") %>%
+  filter(is.finite(value)) %>%
+  group_by(patient, ratio) %>%
+  mutate(has_pair = n_distinct(timepoint) == 2) %>%   # used only to draw lines
+  ungroup()
+
+message(n_distinct(long$sample), " samples from ", n_distinct(long$patient), " patients (",
+        n_distinct(long$patient[long$has_pair]), " with both visits)")
+write_out(count(long, ratio, trial, response, timepoint), "sample_counts")
+
+
+# ---- 5. Statistics -----------------------------------------------------------
+# Unpaired Wilcoxon rank-sum, Baseline vs Week 6, using every available sample.
+# Patients with both visits contribute two (non-independent) samples; this is
+# treated as unpaired by design. FDR = Benjamini-Hochberg within each table.
+# Effect size: rank-biserial correlation r = 2U / (n_W6 * n_BL) - 1, from the
+# Wilcoxon U for Week 6 vs Baseline. Range -1..1; +1 = every W6 value above
+# every BL value, 0 = no shift. Roughly |r| 0.1 small, 0.3 medium, 0.5 large.
+
+rank_test <- function(w6, bl) {
+  if (length(w6) < 2 || length(bl) < 2) return(c(p = NA_real_, r = NA_real_))
+  t <- wilcox.test(w6, bl, exact = FALSE)
+  c(p = t$p.value, r = unname(2 * t$statistic / (length(w6) * length(bl)) - 1))
+}
+
+compare_visits <- function(d) {
+  d %>%
+    summarise(n_BL = sum(timepoint == baseline_lab),
+              n_W6 = sum(timepoint == wk6_lab),
+              n_paired_patients = n_distinct(patient[has_pair]),
+              median_BL = median(value[timepoint == baseline_lab]),
+              median_W6 = median(value[timepoint == wk6_lab]),
+              rt = list(rank_test(value[timepoint == wk6_lab], value[timepoint == baseline_lab])),
+              p = rt[[1]][["p"]],
+              effect_size_r = rt[[1]][["r"]],
+              .groups = "drop") %>%
+    select(-rt) %>%
+    mutate(median_diff_W6_minus_BL = median_W6 - median_BL,
+           FDR = p.adjust(p, "BH"))
+}
+
+stats_all  <- long %>% group_by(ratio) %>% compare_visits()
+stats_resp <- long %>% filter(!is.na(response_group)) %>% group_by(response_group, ratio) %>% compare_visits()
+
+write_out(stats_all,  "stats_BL_vs_W6_all")
+write_out(stats_resp, "stats_BL_vs_W6_by_response")
+
+
+# ---- 6. Figures --------------------------------------------------------------
+
+stat_label <- function(st) mutate(st, label = paste0("Wilcoxon p = ", fmt_p(p), ", FDR = ", fmt_p(FDR),
+                                                     "\neffect size r = ", sprintf("%.2f", effect_size_r)))
+
+# Sample count above each box.
+n_label <- function(d, ...) {
+  counts <- d %>%
+    group_by(..., timepoint) %>%
+    summarise(n = n(), y = max(value), .groups = "drop")
+  geom_text(data = counts, aes(x = timepoint, y = y, label = paste0("n = ", n)),
+            vjust = -0.9, size = 3.2, inherit.aes = FALSE)
+}
+
+base_plot <- function(d) {
+  ggplot(d, aes(timepoint, value)) +
+    geom_boxplot(width = 0.5, fill = "grey96", outlier.shape = NA) +
+    geom_line(data = filter(d, has_pair), aes(group = patient, colour = response), alpha = 0.5) +
+    geom_point(aes(colour = response, shape = trial), size = 2) +
+    scale_colour_manual(values = resp_cols, name = "Response", drop = TRUE) +
+    scale_y_continuous(expand = expansion(mult = c(0.07, 0.35))) +
+    labs(x = NULL, y = NULL, shape = "Trial") +
+    theme_bw(base_size = 12) + black_text +
+    theme(strip.background = element_rect(fill = "grey94"),
+          panel.grid.minor = element_blank(),
+          legend.position  = "bottom",
+          plot.title       = element_text(face = "bold"))
+}
+
+
+# Figure 1: all samples
+p1 <- base_plot(long) +
+  geom_text(data = stat_label(stats_all), colour = sig_col(stat_label(stats_all)), aes(x = 1.5, y = Inf, label = label),
+            vjust = 1.2, size = 3.2, inherit.aes = FALSE) +
+  n_label(long, ratio) +
+  facet_wrap(vars(ratio), scales = "free_y", labeller = as_labeller(ratio_labels)) +
+  labs(title = "IPI 1 mg/kg + NIVO 3 mg/kg: Baseline vs Week 6",
+       subtitle = "AGRF paired-end samples only")
+save_png(p1, "1_ratios_BL_vs_W6", 14, 6)
+
+# Figure 2: split by response
+p2 <- base_plot(filter(long, !is.na(response_group))) +
+  geom_text(data = stat_label(stats_resp), colour = sig_col(stat_label(stats_resp)), aes(x = 1.5, y = Inf, label = label),
+            vjust = 1.2, size = 3, inherit.aes = FALSE) +
+  n_label(filter(long, !is.na(response_group)), response_group, ratio) +
+  facet_grid(ratio ~ response_group, scales = "free_y",
+             labeller = labeller(ratio = as_labeller(ratio_labels))) +
+  labs(title = "IPI 1 mg/kg + NIVO 3 mg/kg: Baseline vs Week 6 by response",
+       subtitle = "AGRF paired-end samples only")
+save_png(p2, "2_ratios_BL_vs_W6_by_response", 14, 8.5)
+
+# Figure 3: IP/CP and PADI2/PADI4 ratios vs IFNG expression (Spearman).
+# Baseline and Week 6 use every sample at that visit; "Change" uses patients
+# with both visits (Week 6 minus Baseline for each variable).
+# FDR is Benjamini-Hochberg across the three panels within each ratio.
+change_lab  <- "Change in ratio and expression (Week 6 - Baseline)"
+ratio_short <- c(IP_ratio = "IP/CP ratio", PADI_ratio = "PADI2/PADI4 ratio")
+
+delta <- df %>%
+  mutate(visit = if_else(timepoint == baseline_lab, "BL", "W6")) %>%
+  select(patient, response, response_group, trial, visit, IP_ratio, PADI_ratio, IFNG) %>%
+  pivot_wider(names_from = visit, values_from = c(IP_ratio, PADI_ratio, IFNG))
+
+corr_long <- bind_rows(
+  df %>%
+    pivot_longer(c(IP_ratio, PADI_ratio), names_to = "ratio", values_to = "y") %>%
+    transmute(ratio, panel = as.character(timepoint), patient, response, trial, x = IFNG, y),
+  map_dfr(names(ratio_short), ~ transmute(
+    delta, ratio = .x, panel = change_lab, patient, response, trial,
+    x = IFNG_W6 - IFNG_BL,
+    y = .data[[paste0(.x, "_W6")]] - .data[[paste0(.x, "_BL")]]))) %>%
+  filter(is.finite(x), is.finite(y)) %>%
+  mutate(ratio = factor(ratio, levels = names(ratio_short)),
+         panel = factor(panel, levels = c(baseline_lab, wk6_lab, change_lab)))
+
+spearman <- function(x, y) {
+  if (length(x) < 3 || n_distinct(x) < 2 || n_distinct(y) < 2) return(c(rho = NA_real_, p = NA_real_))
+  t <- cor.test(x, y, method = "spearman", exact = FALSE)
+  c(rho = unname(t$estimate), p = t$p.value)
+}
+
+stats_corr <- corr_long %>%
+  group_by(ratio, panel) %>%
+  summarise(n = n(), st = list(spearman(x, y)),
+            rho = st[[1]][["rho"]], p = st[[1]][["p"]], .groups = "drop") %>%
+  select(-st) %>%
+  group_by(ratio) %>%
+  mutate(FDR = p.adjust(p, "BH")) %>%
+  ungroup() %>%
+  mutate(label = paste0("Spearman rho = ", sprintf("%.2f", rho), ", p = ", fmt_p(p),
+                        ", FDR = ", fmt_p(FDR), ", n = ", n))
+write_out(stats_corr %>% select(-label), "stats_ratios_vs_IFNG")
+
+grid_free <- function(rows, cols, labeller, ncol) {
+  if ("independent" %in% names(formals(facet_grid))) {
+    facet_grid(rows = rows, cols = cols, scales = "free", independent = "y", labeller = labeller)
+  } else if (requireNamespace("ggh4x", quietly = TRUE)) {
+    ggh4x::facet_grid2(rows = rows, cols = cols, scales = "free", independent = "y",
+                       labeller = labeller)
+  } else {
+    message("For row strips on the right, install.packages('ggh4x'); using facet_wrap instead.")
+    facet_wrap(c(rows, cols), ncol = ncol, scales = "free", labeller = labeller)
+  }
+}
+grid_facets <- grid_free(vars(ratio), vars(panel),
+                         labeller(ratio = as_labeller(ratio_short)), ncol = 3)
+
+p3 <- ggplot(corr_long, aes(x, y)) +
+  geom_smooth(method = "lm", formula = y ~ x, se = TRUE, colour = "grey30",
+              fill = "grey85", linewidth = 0.6) +
+  geom_point(aes(colour = response, shape = trial), size = 2.2) +
+  geom_text(data = stats_corr, colour = sig_col(stats_corr), aes(x = -Inf, y = Inf, label = label),
+            hjust = -0.03, vjust = 1.5, size = 3, inherit.aes = FALSE) +
+  grid_facets +
+  scale_colour_manual(values = resp_cols, name = "Response", drop = TRUE) +
+  scale_y_continuous(expand = expansion(mult = c(0.05, 0.15))) +
+  labs(x = "IFNG log2(TPM+1)",
+       y = "log2 ratio (TPM+1)",
+       shape = "Trial",
+       title = "IPI 1 mg/kg + NIVO 3 mg/kg: ratios vs IFNG",
+       subtitle = "AGRF paired-end samples only") +
+  theme_bw(base_size = 12) + black_text +
+  theme(strip.background = element_rect(fill = "grey94"),
+        panel.grid.minor = element_blank(),
+        legend.position  = "bottom",
+        plot.title       = element_text(face = "bold"))
+save_png(p3, "3_ratios_vs_IFNG", 14, 9.5)
+
+# Responders vs non-responders (Wilcoxon rank-sum, one sample per patient per
+# panel). Effect size r = rank-biserial, +1 = every responder above every
+# non-responder. Clinical PD counted as non-responders if pd_as_nonresponder.
+rnr_test <- function(d) {
+  d %>%
+    summarise(n_R  = sum(response_group == "Responder"),
+              n_NR = sum(response_group == "Non-responder"),
+              median_R  = median(value[response_group == "Responder"]),
+              median_NR = median(value[response_group == "Non-responder"]),
+              rt = list(rank_test(value[response_group == "Responder"],
+                                  value[response_group == "Non-responder"])),
+              p = rt[[1]][["p"]], effect_size_r = rt[[1]][["r"]],
+              .groups = "drop") %>%
+    select(-rt)
+}
+
+rnr_plot <- function(d, stats, ...) {
+  counts <- d %>% group_by(..., response_group) %>%
+    summarise(n = n(), y = max(value), .groups = "drop")
+  ggplot(d, aes(response_group, value)) +
+    geom_boxplot(width = 0.55, fill = "grey96", outlier.shape = NA) +
+    geom_point(aes(colour = response, shape = trial), size = 2,
+               position = position_jitter(width = 0.12, height = 0, seed = 1)) +
+    geom_text(data = stat_label(stats), colour = sig_col(stat_label(stats)), aes(x = 1.5, y = Inf, label = label),
+              vjust = 1.2, size = 3, inherit.aes = FALSE) +
+    geom_text(data = counts, aes(x = response_group, y = y, label = paste0("n = ", n)),
+              vjust = -0.9, size = 3, inherit.aes = FALSE) +
+    scale_colour_manual(values = resp_cols, name = "Response", drop = TRUE) +
+    scale_y_continuous(expand = expansion(mult = c(0.07, 0.4))) +
+    labs(x = NULL, y = "log2(TPM+1)", shape = "Trial") +
+    theme_bw(base_size = 12) + black_text +
+    theme(strip.background = element_rect(fill = "grey94"),
+          panel.grid.minor = element_blank(),
+          legend.position  = "bottom",
+          plot.title       = element_text(face = "bold"))
+}
+
+# Figure 4: IP/CP ratio, PADI2/PADI4 ratio and IFNG by response
+# (Baseline, Week 6, and Week 6 - Baseline change). FDR across all 9 tests.
+rnr_features <- c(IP_ratio = "IP/CP ratio", PADI_ratio = "PADI2/PADI4 ratio", IFNG = "IFNG")
+
+rnr_long <- bind_rows(
+  df %>%
+    pivot_longer(all_of(names(rnr_features)), names_to = "feature", values_to = "value") %>%
+    transmute(feature, panel = as.character(timepoint), patient, response, response_group,
+              trial, value),
+  map_dfr(names(rnr_features), ~ transmute(
+    delta, feature = .x, panel = change_lab, patient, response, response_group, trial,
+    value = .data[[paste0(.x, "_W6")]] - .data[[paste0(.x, "_BL")]]))) %>%
+  filter(!is.na(response_group), is.finite(value)) %>%
+  mutate(feature = factor(feature, levels = names(rnr_features)),
+         panel   = factor(panel, levels = c(baseline_lab, wk6_lab, change_lab)))
+
+stats_rnr <- rnr_long %>%
+  group_by(feature, panel) %>% rnr_test() %>%
+  mutate(FDR = p.adjust(p, "BH"))
+write_out(stats_rnr, "stats_R_vs_NR_ratios_IFNG")
+
+p4 <- rnr_plot(rnr_long, stats_rnr, feature, panel) +
+  grid_free(vars(feature), vars(panel), labeller(feature = as_labeller(rnr_features)), ncol = 3) +
+  labs(y = "log2 ratio / log2(TPM+1)  (change: Week 6 - Baseline)",
+       title = "IPI 1 mg/kg + NIVO 3 mg/kg: responders vs non-responders",
+       subtitle = "AGRF paired-end samples only")
+save_png(p4, "4_ratios_IFNG_R_vs_NR", 12, 12)
+
+# Figure 5: antigen presentation machinery genes by response, one PNG per
+# timepoint. FDR across the 8 features within each timepoint.
+apm_features <- c(setNames(apm_genes, apm_genes), APM_score = "APM score (mean of 7 genes)")
+
+apm_long <- df %>%
+  filter(!is.na(response_group)) %>%
+  pivot_longer(all_of(names(apm_features)), names_to = "feature", values_to = "value") %>%
+  filter(is.finite(value)) %>%
+  mutate(feature = factor(feature, levels = names(apm_features)))
+
+stats_apm <- apm_long %>%
+  group_by(timepoint, feature) %>% rnr_test() %>%
+  group_by(timepoint) %>% mutate(FDR = p.adjust(p, "BH")) %>% ungroup()
+write_out(stats_apm, "stats_R_vs_NR_APM")
+
+for (tp in levels(df$timepoint)) {
+  d <- filter(apm_long, timepoint == tp)
+  if (!nrow(d)) next
+  p5_tp <- rnr_plot(d, filter(stats_apm, timepoint == tp), feature) +
+    facet_wrap(vars(feature), ncol = 4, scales = "free_y", labeller = as_labeller(apm_features)) +
+    labs(title = paste0("Antigen presentation machinery by response: ", tp),
+         subtitle = "IPI 1 mg/kg + NIVO 3 mg/kg; AGRF paired-end samples only")
+  save_png(p5_tp, paste0("5_APM_R_vs_NR_", slug(tp)), 14, 9)
+}
+
+# Figure 5 (continued): APM genes across time within each response group,
+# same layout as figure 2 (all samples; lines join patients with both visits).
+# Wilcoxon rank-sum Week 6 vs Baseline; FDR across the 8 features within each
+# response group; r > 0 = higher at Week 6.
+apm_time <- df %>%
+  filter(!is.na(response_group)) %>%
+  pivot_longer(all_of(names(apm_features)), names_to = "feature", values_to = "value") %>%
+  filter(is.finite(value)) %>%
+  group_by(patient, feature) %>%
+  mutate(has_pair = n_distinct(timepoint) == 2) %>%
+  ungroup() %>%
+  mutate(feature = factor(feature, levels = names(apm_features)))
+
+stats_apm_time <- apm_time %>%
+  group_by(response_group, feature) %>% compare_visits() %>%
+  group_by(response_group) %>% mutate(FDR = p.adjust(p, "BH")) %>% ungroup()
+write_out(stats_apm_time, "stats_APM_BL_vs_W6_by_response")
+
+for (g in levels(apm_time$response_group)) {
+  d <- filter(apm_time, response_group == g)
+  if (!nrow(d)) next
+  p5_g <- base_plot(d) +
+    geom_text(data = stat_label(filter(stats_apm_time, response_group == g)), colour = sig_col(stat_label(filter(stats_apm_time, response_group == g))),
+              aes(x = 1.5, y = Inf, label = label), vjust = 1.2, size = 3, inherit.aes = FALSE) +
+    n_label(d, feature) +
+    facet_wrap(vars(feature), ncol = 4, scales = "free_y", labeller = as_labeller(apm_features)) +
+    labs(y = "log2(TPM+1)",
+         title = paste0("Antigen presentation machinery, Baseline vs Week 6: ", g, "s"),
+         subtitle = "IPI 1 mg/kg + NIVO 3 mg/kg; AGRF paired-end samples only")
+  save_png(p5_g, paste0("5_APM_BL_vs_W6_", slug(g)), 14, 9)
+}
+
+# Figure 5 (line plot): responders and non-responders on the same axes across
+# time. Thick lines = group median, error bars = IQR, faint points = samples.
+# Labels give the R vs NR test at each timepoint (from stats_R_vs_NR_APM.csv).
+apm_summary <- apm_time %>%
+  group_by(feature, timepoint, response_group) %>%
+  summarise(n = n(), median = median(value),
+            q1 = quantile(value, 0.25), q3 = quantile(value, 0.75), .groups = "drop")
+write_out(apm_summary, "APM_median_IQR_by_response_timepoint")
+
+rnr_time_lab <- stats_apm %>%
+  mutate(label = paste0("R vs NR FDR = ", fmt_p(FDR)))
+
+dodge <- position_dodge(width = 0.25)
+p5_line <- ggplot(apm_summary, aes(timepoint, median, colour = response_group, group = response_group)) +
+  geom_point(data = apm_time, aes(y = value),
+             position = position_jitterdodge(jitter.width = 0.08, dodge.width = 0.25, seed = 1),
+             alpha = 0.25, size = 1.2) +
+  geom_errorbar(aes(ymin = q1, ymax = q3), width = 0.1, position = dodge) +
+  geom_line(position = dodge, linewidth = 0.9) +
+  geom_point(position = dodge, size = 2.8) +
+  geom_text(aes(y = q3, label = paste0("n = ", n)), position = dodge,
+            vjust = -0.7, size = 2.8, show.legend = FALSE) +
+  geom_text(data = rnr_time_lab, colour = sig_col(rnr_time_lab), aes(x = timepoint, y = Inf, label = label),
+            vjust = 1.5, size = 2.8, inherit.aes = FALSE) +
+  facet_wrap(vars(feature), ncol = 4, scales = "free_y", labeller = as_labeller(apm_features)) +
+  scale_colour_manual(values = resp_cols, name = "Response") +
+  scale_y_continuous(expand = expansion(mult = c(0.05, 0.3))) +
+  labs(x = NULL, y = "log2(TPM+1)",
+       title = "Antigen presentation machinery over time: responders vs non-responders",
+       subtitle = "IPI 1 mg/kg + NIVO 3 mg/kg; AGRF paired-end samples only") +
+  theme_bw(base_size = 12) + black_text +
+  theme(strip.background = element_rect(fill = "grey94"),
+        panel.grid.minor = element_blank(),
+        legend.position  = "bottom",
+        plot.title       = element_text(face = "bold"))
+save_png(p5_line, "5_APM_over_time_R_vs_NR", 14, 9)
+
+
+# ---- 7. Depth reruns and mixed model ----------------------------------------
+
+# 7.1 Depth reruns vs the original sample (same patient and timepoint, AGRF only)
+rerun_long <- candidates %>%
+  group_by(patient, timepoint) %>%
+  filter(n() > 1, any(is_rerun)) %>%
+  ungroup() %>%
+  left_join(ratios_all, by = "sample") %>%
+  pivot_longer(c(IP_ratio, PADI_ratio), names_to = "ratio", values_to = "value") %>%
+  select(patient, timepoint, ratio, sample, is_rerun, seq_site, seq_type, value)
+
+side <- function(rerun, suffix)
+  rerun_long %>% filter(is_rerun == rerun) %>% select(-is_rerun) %>%
+  rename_with(~ paste0(.x, suffix), c(sample, seq_site, seq_type, value))
+
+rerun_cmp <- inner_join(side(FALSE, "_original"), side(TRUE, "_rerun"),
+                        by = c("patient", "timepoint", "ratio")) %>%
+  mutate(difference = value_rerun - value_original,
+         changed = seq_site_original != seq_site_rerun | seq_type_original != seq_type_rerun,
+         batch_changed = case_when(is.na(changed) ~ "Unknown", changed ~ "Yes", TRUE ~ "No")) %>%
+  select(-changed)
+write_out(rerun_cmp, "rerun_vs_original")
+
+if (nrow(rerun_cmp)) {
+  rerun_cmp %>%
+    group_by(ratio) %>%
+    summarise(n = n(), median_abs_difference = median(abs(difference)),
+              spearman_rho = if (n() >= 3) cor(value_original, value_rerun, method = "spearman")
+                             else NA_real_,
+              .groups = "drop") %>%
+    write_out("rerun_vs_original_summary")
+
+  p5 <- ggplot(rerun_cmp, aes(value_original, value_rerun, colour = batch_changed)) +
+    geom_abline(linetype = 2, colour = "grey50") +
+    geom_point(size = 2.2) +
+    facet_wrap(vars(ratio), scales = "free", labeller = as_labeller(ratio_labels)) +
+    scale_colour_manual(values = c(No = "#2166AC", Yes = "#B2182B", Unknown = "grey60")) +
+    labs(x = "Original sample", y = "Depth rerun", colour = "Site/type changed in rerun",
+         title = "Depth reruns vs original sample",
+         subtitle = "On the dashed line = rerun gives the same ratio") +
+    theme_bw(base_size = 12) + black_text +
+    theme(strip.background = element_rect(fill = "grey94"),
+          legend.position  = "bottom",
+          plot.title       = element_text(face = "bold"))
+  save_png(p5, "6_rerun_vs_original", 9, 5.5)
+} else {
+  message("No depth reruns with a matching original sample in this subset.")
+}
+
+# 7.2 Week 6 vs Baseline with a patient random intercept (uses all samples and
+# accounts for patients seen at both visits), unadjusted and adjusted for trial.
+model_sets <- list(unadjusted = character(), adjusted_trial = c("trial"))
+run_models <- function(d)
+  imap_dfr(model_sets, ~ mutate(fit_timepoint(d, .x), adjustment = .y, .before = 1))
+
+stats_model_all <- long %>%
+  group_by(ratio) %>% group_modify(~ run_models(.x)) %>% ungroup() %>%
+  group_by(adjustment) %>% mutate(FDR = p.adjust(p, "BH")) %>% ungroup()
+stats_model_resp <- long %>%
+  filter(!is.na(response_group)) %>%
+  group_by(response_group, ratio) %>% group_modify(~ run_models(.x)) %>% ungroup() %>%
+  group_by(adjustment) %>% mutate(FDR = p.adjust(p, "BH")) %>% ungroup()
+
+write_out(stats_model_all,  "stats_model_all")
+write_out(stats_model_resp, "stats_model_by_response")
+
+
+capture.output(sessionInfo(), file = file.path(out_dir, "sessionInfo.txt"))
+message("Done. Outputs in ", normalizePath(out_dir))
+```
+```{r}
+chk <- c("PSMB8", "PSMB9", "TAP1", "TAP2", "PSMB10", "B2M", "HLA-A")
+
+expr_matrix %>%
+  filter(gene_name %in% chk) %>%
+  mutate(median_tpm = apply(select(., starts_with("X")), 1, median)) %>%
+  select(gene_name, gene_id, median_tpm) %>%
+  arrange(gene_name, desc(median_tpm))
+
+# How many symbols have more than one Ensembl ID overall?
+tpm_tbl %>% count(gene_name) %>% filter(n > 1) %>% nrow()
+```
+
+
+```{r}
+primary <- c(PSMB8 = "ENSG00000204264", PSMB9 = "ENSG00000240065",
+             TAP1  = "ENSG00000168394", TAP2  = "ENSG00000204267",
+             B2M   = "ENSG00000166710", `HLA-A` = "ENSG00000206503")
+
+expr_matrix %>%
+  filter(sub("\\..*", "", gene_id) %in% primary) %>%
+  select(gene_name, gene_id)
+```
+
+```{r}
+expr_matrix %>% filter(sub("\\..*", "", gene_id) %in% c("ENSG00000204264", "ENSG00000240065", "ENSG00000168394"))
+```
+
+
+

@@ -1,0 +1,8 @@
+trial,timepoint,seq_site,seq_type,in_batch,n
+Morpheus,Baseline,AGRF,Paired-end,TRUE,8
+Morpheus,Week 6,AGRF,Paired-end,TRUE,4
+OpACIN-neo,Baseline,NKI/EGA,Single-end,FALSE,25
+OpACIN-neo,Week 6,AGRF,Paired-end,TRUE,10
+PRADO,Baseline,AGRF,Paired-end,TRUE,23
+PRADO,Baseline,NKI/EGA,Paired-end,FALSE,80
+PRADO,Week 6,AGRF,Paired-end,TRUE,28

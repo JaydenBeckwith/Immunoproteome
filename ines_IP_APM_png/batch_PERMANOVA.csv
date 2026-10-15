@@ -1,0 +1,3 @@
+timepoint,analysis,term,n,genes,R2,F,p,p_adj
+Baseline,unadjusted,site,52,18469,0.4455620844722748,40.181422661920585,1e-4,1e-4
+Baseline,unadjusted,seq_type,52,18469,0.3043735198628577,21.87765478700945,1e-4,1e-4

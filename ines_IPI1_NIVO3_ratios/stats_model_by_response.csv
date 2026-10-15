@@ -1,0 +1,9 @@
+response_group,ratio,adjustment,n,n_patients,covariates_used,covariates_aliased,model,estimate_W6_minus_BL,p,FDR
+Responder,IP_ratio,unadjusted,47,34,,,lmer (1|patient),0.7946338117355147,2.6183945771379995e-4,0.0010473578308551998
+Responder,IP_ratio,adjusted_trial,47,34,trial,,lmer (1|patient),1.0153138590413673,2.3157565839220828e-5,9.263026335688331e-5
+Responder,PADI_ratio,unadjusted,47,34,,,lmer (1|patient),1.100949775355954,0.006935422632341098,0.009247230176454797
+Responder,PADI_ratio,adjusted_trial,47,34,trial,,lmer (1|patient),1.2379029052080832,0.0043836030289061915,0.005844804038541589
+Non-responder,IP_ratio,unadjusted,25,16,,,lmer (1|patient),0.5096004121178304,0.018155967736731362,0.018155967736731362
+Non-responder,IP_ratio,adjusted_trial,25,16,trial,,lmer (1|patient),0.519306004110938,0.015377814600102173,0.015377814600102173
+Non-responder,PADI_ratio,unadjusted,25,16,,,lmer (1|patient),1.5248285287595376,7.545679940205205e-4,0.001509135988041041
+Non-responder,PADI_ratio,adjusted_trial,25,16,trial,,lmer (1|patient),1.52999659184767,7.453374147591151e-4,0.0014906748295182301

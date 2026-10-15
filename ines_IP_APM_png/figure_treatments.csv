@@ -1,0 +1,5 @@
+file_tag,treatment
+arm_01,Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent)
+arm_02,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent)
+arm_03,Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential)
+arm_04,IPI+NIVO

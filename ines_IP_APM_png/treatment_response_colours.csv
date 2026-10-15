@@ -1,0 +1,13 @@
+arm,response_plot,group,colour
+Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent),Non-responder,Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent) | Non-responder,#F2BCC9
+Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent),Responder,Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent) | Responder,#E16A86
+Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent),Unknown,Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent) | Unknown,#F9E1E7
+Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Non-responder,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent) | Non-responder,#CDD18C
+Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Responder,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent) | Responder,#909800
+Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Unknown,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent) | Unknown,#E9EACC
+Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Non-responder,Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential) | Non-responder,#8CDAD2
+Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Responder,Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential) | Responder,#00AD9A
+Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Unknown,Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential) | Unknown,#CCEFEB
+IPI+NIVO,Non-responder,IPI+NIVO | Non-responder,#CEC7F4
+IPI+NIVO,Responder,IPI+NIVO | Responder,#9183E6
+IPI+NIVO,Unknown,IPI+NIVO | Unknown,#E9E6FA

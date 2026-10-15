@@ -1,0 +1,21 @@
+arm,timepoint,response,site,seq_type,n
+Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent),Baseline,Responder,NKI/EGA,Single-end,10
+Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent),Week 6,Responder,AGRF,Paired-end,12
+Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent),Week 6,Non-responder,AGRF,Paired-end,1
+Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Baseline,Responder,NKI/EGA,Single-end,6
+Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Baseline,Non-responder,NKI/EGA,Single-end,1
+Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Baseline,NA,NKI/EGA,Single-end,1
+Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Week 6,Responder,AGRF,Paired-end,8
+Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Week 6,Non-responder,AGRF,Paired-end,1
+Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Week 6,NA,AGRF,Paired-end,1
+Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Baseline,Responder,NKI/EGA,Single-end,4
+Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Baseline,Non-responder,NKI/EGA,Single-end,2
+Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Week 6,Responder,AGRF,Paired-end,9
+Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Week 6,Non-responder,AGRF,Paired-end,2
+IPI+NIVO,Baseline,Responder,AGRF,Paired-end,14
+IPI+NIVO,Baseline,Responder,NKI/EGA,Paired-end,2
+IPI+NIVO,Baseline,Non-responder,AGRF,Paired-end,6
+IPI+NIVO,Baseline,Non-responder,NKI/EGA,Paired-end,3
+IPI+NIVO,Baseline,NA,AGRF,Paired-end,3
+IPI+NIVO,Week 6,Responder,AGRF,Paired-end,18
+IPI+NIVO,Week 6,Non-responder,AGRF,Paired-end,10

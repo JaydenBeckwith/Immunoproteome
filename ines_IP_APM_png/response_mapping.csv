@@ -1,0 +1,14 @@
+path_resp,response,n
+Clinical PD,NA,2
+distant metastasis,NA,8
+near pCR,Responder,24
+near pCR (=10% viable tumour),Responder,10
+not evaluable,NA,1
+other,NA,1
+pCR,Responder,95
+pNR,Non-responder,26
+pNR (> 50% vital tumor cells),Non-responder,27
+pPR,Responder,16
+pPR (>10 to =50% viable tumour),Responder,11
+unknown,NA,1
+NA,NA,8

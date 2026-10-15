@@ -1,0 +1,17 @@
+arm,timepoint,n,rho,p,p_adj,label
+Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent),Baseline,10,0.5515151515151514,0.09840117666963506,0.5332695090447693,"Spearman rho = 0.55
+q = 0.53; n = 10"
+Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent),Week 6,13,0.23626373626373628,0.4370835438311813,0.5332695090447693,"Spearman rho = 0.24
+q = 0.53; n = 13"
+Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Baseline,8,0.33333333333333337,0.41975308641975306,0.5332695090447693,"Spearman rho = 0.33
+q = 0.53; n = 8"
+Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),Week 6,10,0.054545454545454536,0.8810361811618526,0.8810361811618526,"Spearman rho = 0.05
+q = 0.88; n = 10"
+Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Baseline,6,0.6,0.2079999999999999,0.5332695090447693,"Spearman rho = 0.6
+q = 0.53; n = 6"
+Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),Week 6,11,0.3,0.37008312228206763,0.5332695090447693,"Spearman rho = 0.3
+q = 0.53; n = 11"
+IPI+NIVO,Baseline,28,0.14340448823207444,0.46661082041417323,0.5332695090447693,"Spearman rho = 0.14
+q = 0.53; n = 28"
+IPI+NIVO,Week 6,28,0.24192665571975916,0.21485870361079162,0.5332695090447693,"Spearman rho = 0.24
+q = 0.53; n = 28"

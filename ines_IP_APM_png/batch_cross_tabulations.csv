@@ -1,0 +1,21 @@
+timepoint,site,seq_type,arm,cohort,response,n
+Baseline,AGRF,Paired-end,IPI+NIVO,PRADO,Responder,14
+Baseline,AGRF,Paired-end,IPI+NIVO,PRADO,Non-responder,6
+Baseline,AGRF,Paired-end,IPI+NIVO,PRADO,NA,3
+Baseline,NKI/EGA,Paired-end,IPI+NIVO,PRADO,Responder,2
+Baseline,NKI/EGA,Paired-end,IPI+NIVO,PRADO,Non-responder,3
+Baseline,NKI/EGA,Single-end,Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent),OpACIN,Responder,10
+Baseline,NKI/EGA,Single-end,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),OpACIN,Responder,6
+Baseline,NKI/EGA,Single-end,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),OpACIN,Non-responder,1
+Baseline,NKI/EGA,Single-end,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),OpACIN,NA,1
+Baseline,NKI/EGA,Single-end,Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),OpACIN,Responder,4
+Baseline,NKI/EGA,Single-end,Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),OpACIN,Non-responder,2
+Week 6,AGRF,Paired-end,Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent),OpACIN,Responder,12
+Week 6,AGRF,Paired-end,Arm A: IPI 3mg/kg + Nivo 1mg/kg (concurrent),OpACIN,Non-responder,1
+Week 6,AGRF,Paired-end,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),OpACIN,Responder,8
+Week 6,AGRF,Paired-end,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),OpACIN,Non-responder,1
+Week 6,AGRF,Paired-end,Arm B: IPI 1mg/kg + Nivo 3mg/kg (concurrent),OpACIN,NA,1
+Week 6,AGRF,Paired-end,Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),OpACIN,Responder,9
+Week 6,AGRF,Paired-end,Arm C: IPI 3mg/kg then Nivo 3mg/kg (sequential),OpACIN,Non-responder,2
+Week 6,AGRF,Paired-end,IPI+NIVO,PRADO,Responder,18
+Week 6,AGRF,Paired-end,IPI+NIVO,PRADO,Non-responder,10

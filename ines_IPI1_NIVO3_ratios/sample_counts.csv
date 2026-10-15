@@ -1,0 +1,25 @@
+ratio,trial,response,timepoint,n
+IP_ratio,Morpheus,Responder,Baseline,5
+IP_ratio,Morpheus,Responder,Week 6,1
+IP_ratio,Morpheus,Non-responder,Baseline,3
+IP_ratio,Morpheus,Non-responder,Week 6,3
+IP_ratio,OpACIN-neo,Responder,Week 6,9
+IP_ratio,OpACIN-neo,Non-responder,Week 6,1
+IP_ratio,PRADO,Responder,Baseline,14
+IP_ratio,PRADO,Responder,Week 6,18
+IP_ratio,PRADO,Non-responder,Baseline,6
+IP_ratio,PRADO,Non-responder,Week 6,10
+IP_ratio,PRADO,Clinical PD,Baseline,2
+IP_ratio,PRADO,Declined surgery,Baseline,1
+PADI_ratio,Morpheus,Responder,Baseline,5
+PADI_ratio,Morpheus,Responder,Week 6,1
+PADI_ratio,Morpheus,Non-responder,Baseline,3
+PADI_ratio,Morpheus,Non-responder,Week 6,3
+PADI_ratio,OpACIN-neo,Responder,Week 6,9
+PADI_ratio,OpACIN-neo,Non-responder,Week 6,1
+PADI_ratio,PRADO,Responder,Baseline,14
+PADI_ratio,PRADO,Responder,Week 6,18
+PADI_ratio,PRADO,Non-responder,Baseline,6
+PADI_ratio,PRADO,Non-responder,Week 6,10
+PADI_ratio,PRADO,Clinical PD,Baseline,2
+PADI_ratio,PRADO,Declined surgery,Baseline,1
